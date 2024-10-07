@@ -1,41 +1,48 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.contrib import messages
 from .models import Adresse
+from django.core.exceptions import ValidationError
 
-# View zum Rendern des Adressformulars
+def validate_address_data(strasse, hausnummer, plz, ort):
+    if not strasse:
+        raise ValidationError('Die Straße darf nicht leer sein.')
+    if not hausnummer:
+        raise ValidationError('Die Hausnummer darf nicht leer sein.')
+    if not plz or not str(plz).isdigit() or len(str(plz)) != 4:
+        raise ValidationError('Die PLZ muss eine vierstellige Zahl sein.')
+    if not ort:
+        raise ValidationError('Der Ort darf nicht leer sein.')
+
+def index(request):
+    return redirect('adressformular')  # Leitet zur Adresseingabe um
+
 def adressformular(request):
-    """
-    Rendert das Formular zur Eingabe einer Adresse.
-    """
-    return render(request, 'adresse_formular.html')  # Rendere die Seite mit dem Formular
+    return render(request, 'adressformular.html')
 
-# API-Endpunkt zum Speichern der eingegebenen Adresse
 def adresse_speichern(request):
     if request.method == 'POST':
-        # Überprüfen, ob alle Felder ausgefüllt sind
-        if not all([request.POST.get('strasse'), request.POST.get('hausnummer'), request.POST.get('plz'),
-                    request.POST.get('ort'), request.POST.get('bundesland')]):
-            return JsonResponse({'error': 'Bitte alle Felder ausfüllen'}, status=400)
+        strasse = request.POST.get('strasse')
+        hausnummer = request.POST.get('hausnummer')
+        plz = request.POST.get('plz')
+        ort = request.POST.get('ort')
 
-        # Neue Adresse erstellen und speichern
-        neue_adresse = Adresse(
-            strasse=request.POST['strasse'],
-            hausnummer=request.POST['hausnummer'],
-            plz=request.POST['plz'],
-            ort=request.POST['ort'],
-            bundesland=request.POST['bundesland']
-        )
-        neue_adresse.save()
+        try:
+            validate_address_data(strasse, hausnummer, plz, ort)
+            neue_adresse = Adresse(
+                strasse=strasse,
+                hausnummer=hausnummer,
+                plz=plz,
+                ort=ort,
+            )
+            neue_adresse.save()
+            messages.success(request, 'Adresse erfolgreich gespeichert.')
+            return redirect('adressen_anzeigen')
+        except ValidationError as e:
+            messages.error(request, f'Fehler beim Speichern der Adresse: {", ".join(e.messages)}')
+            return render(request, 'adressformular.html', {'request': request})
 
-        # Erfolgreiches Speichern, umleiten zur Adressübersicht
-        return redirect('adressen_anzeigen')
+    return render(request, 'adressformular.html')
 
-    # Wenn es keine POST-Anfrage ist, Fehlermeldung ausgeben
-    return JsonResponse({'error': 'Nur POST-Anfragen sind erlaubt'},status=400)
-# View zur Anzeige aller gespeicherten Adressen
 def adressen_anzeigen(request):
-    """
-    Zeigt eine Übersicht aller gespeicherten Adressen.
-    """
-    adressen = Adresse.objects.all()  # Hole alle Adressen aus der Datenbank
-    return render(request, 'adressen_anzeigen.html', {'adressen': adressen})  # Rendere die Seite mit der Adressenliste
+    adressen = Adresse.objects.all()
+    return render(request, 'adressuebersicht.html', {'adressen': adressen})

@@ -1,10 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neue Adresse hinzufügen</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'adressformularStyles.css' %}">
 </head>
 <body>
+    <div class="form-container">
+        <h1>Neue Adresse hinzufügen</h1>
+        <div id="error-message" class="error-message" style="display:none;"></div>
+    {% if messages %}
+        <div class="success-message">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %} 
+        <form action="{% url 'adresse_speichern' %}" method="post">
+            {% csrf_token %}
 
+            <!-- Street Input -->
+            <input type="text"
+                   name="strasse"
+                   id="strasse"
+                   placeholder="Straße"
+                   required
+                   oninput="handleStreetInput(event, document.getElementById('strasse-suggestions'), (suggestion) => selectSuggestion(suggestion, document.getElementById('strasse'), document.getElementById('strasse-suggestions')))"
+            />
+            <div id="strasse-suggestions"></div>
+
+            <!-- House Number Input -->
+            <input type="number" min="1" max="9999"
+                   name="hausnummer"
+                   id="hausnummer"
+                   placeholder="Hausnummer"
+                   required
+            />
+
+            <!-- Postal Code Input -->
+            <input type="number" min="1010" max="9999"
+                   name="plz"
+                   id="plz"
+                   placeholder="PLZ"
+                   required
+            />
+
+            <!-- Ort Input -->
+            <input type="text"
+                   name="ort"
+                   id="ort"
+                   placeholder="Ort"
+                   required
+                   oninput="handleOrtInput(event, document.getElementById('ort-suggestions'), (suggestion) => selectSuggestion(suggestion, document.getElementById('ort'), document.getElementById('ort-suggestions')))"
+            />
+            <div id="ort-suggestions"></div>
+
+            <button type="submit">Adresse speichern</button>
+        </form>
+    </div>
+
+    <!-- Link to the JavaScript file -->
+    <script src="{% static 'adressService.js' %}"></script>
 </body>
 </html>

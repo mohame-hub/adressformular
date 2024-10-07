@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adressübersicht</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'adressuebersichtStyles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gespeicherte Adressen</h1>
+
+        <table class="address-table">
+            <thead>
+                <tr>
+                    <th>Straße</th>
+                    <th>Hausnummer</th>
+                    <th>PLZ</th>
+                    <th>Ort</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if adressen %}
+                    {% for adresse in adressen %}
+                    <tr>
+                        <td>{{ adresse.strasse }}</td>
+                        <td>{{ adresse.hausnummer }}</td>
+                        <td>{{ adresse.plz }}</td>
+                        <td>{{ adresse.ort }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="4">Keine Adressen vorhanden.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

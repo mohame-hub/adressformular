@@ -1,7 +1,8 @@
-from django.urls import path
-from . import views  # Importiere die Views aus der aktuellen App
+from django.urls import path, include
+from adressformular import views
 
 urlpatterns = [
+    path('', views.index, name='index'),
     # Route zum Rendern des Adressformulars
     path('adressformular/', views.adressformular, name='adressformular'),
 
